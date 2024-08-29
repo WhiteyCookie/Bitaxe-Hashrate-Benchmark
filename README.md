@@ -3,6 +3,7 @@ Bitaxe Benchmarking Script
 
 This repository contains a Python script designed to benchmark the Hashrate performance of a Bitaxe mining device. Tested on the Bitaxe Supra, should work with Ultra too. Hex not sure do the issue of Power Cycle after each new setting.
 
+
 The script tests various combinations of core voltages and frequencies to determine the optimal settings for maximum hashrate while maintaining safe operating temperatures.
 
 
