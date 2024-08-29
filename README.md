@@ -7,20 +7,27 @@ This repository contains a Python script designed to benchmark the Hashrate perf
 The script tests various combinations of core voltages and frequencies to determine the optimal settings for maximum hashrate while maintaining safe operating temperatures.
 
 
+
 Features
 
 
 Dynamic Configuration: Automatically fetches and uses the current default settings of the Bitaxe device.
 
+
 Temperature Monitoring: Continuously monitors the device temperature during benchmarking to prevent overheating.
+
 
 Automated Benchmarking: Tests different combinations of core voltage and frequency and records the average hashrate and temperature.
 
+
 Result Storage: Saves the benchmarking results in a JSON file for future analysis.
+
 
 Graceful Interruption Handling: Captures interruptions (e.g., Ctrl+C) and resets the device to the best or default settings before exiting.
 
+
 Cooling Down: Automatically cools down the device between benchmarks if necessary.
+
 
 
 
