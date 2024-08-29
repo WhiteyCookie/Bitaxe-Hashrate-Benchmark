@@ -1,0 +1,1 @@
+# Bitaxe-Hashrate-Benchmark
