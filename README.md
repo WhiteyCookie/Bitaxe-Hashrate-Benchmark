@@ -36,27 +36,39 @@ Configuration
 
 Before running the script, you can customize the following settings in the script:
 
+
 bitaxe_ip: IP address of your Bitaxe device (default: "http://192.168.2.117").
+
 
 core_voltages: List of core voltages (in mV) to test (default: [1150, 1200, 1250]).
 
+
 frequencies: List of frequencies (in MHz) to test (default: [550, 575, 590]).
+
 
 cool_down_voltage: Voltage to use during cooldown (default: 1166 mV).
 
+
 cool_down_frequency: Frequency to use during cooldown (default: 400 MHz).
+
 
 cool_down_time: Duration of cooldown between benchmarks (in seconds, default: 300 seconds).
 
+
 benchmark_time: Duration of each benchmark (in seconds, default: 9000 seconds).
+
 
 fetch_interval: Interval between fetching system data during benchmarking (in seconds, default: 150 seconds).
 
+
 max_temp: Maximum allowed temperature before stopping a benchmark (in °C, default: 66°C).
+
 
 max_allowed_voltage: Maximum allowed core voltage (in mV, default: 1300 mV). DO ONLY MODIFY IF YOU KNOW WHAT YOU ARE DOING!
 
+
 max_allowed_frequency: Maximum allowed frequency (in MHz, default: 600 MHz). DO ONLY MODIFY IF YOU KNOW WHAT YOU ARE DOING!
+
 
 
 
