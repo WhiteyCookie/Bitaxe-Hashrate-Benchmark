@@ -58,7 +58,7 @@ Before running the script, you can customize the following settings in the scrip
     benchmark_time: Duration of each benchmark (in seconds, default: 9000 seconds).
 
 
-    fetch_interval: Interval between fetching system data during benchmarking (in seconds, default: 150 seconds).
+    sample_interval: Interval between fetching system data during benchmarking (in seconds, default: 150 seconds).
 
 
     max_temp: Maximum allowed temperature before stopping a benchmark (in °C, default: 66°C).
