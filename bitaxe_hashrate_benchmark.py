@@ -13,12 +13,12 @@ RESET = "\033[0m"
 # Configuration
 bitaxe_ip = "http://192.168.2.117"
 core_voltages = [1150, 1200, 1250]
-frequencies = [575, 600]
+frequencies = [550, 575, 600]
 cool_down_voltage = 1166
 cool_down_frequency = 400
 cool_down_time = 300  # set x time in seconds
-benchmark_time = 180  # set x time in seconds
-sample_interval = 10  # set x time in seconds
+benchmark_time = 9000  # set x time in seconds
+sample_interval = 150  # set x time in seconds
 max_temp = 66
 max_allowed_voltage = 1300
 max_allowed_frequency = 600
@@ -111,7 +111,7 @@ def restart_system():
         print(YELLOW + "Restarting Bitaxe system to apply new settings..." + RESET)
         response = requests.post(f"{bitaxe_ip}/api/system/restart", timeout=10)
         response.raise_for_status()  # Raise an exception for HTTP errors
-        time.sleep(60)  # Allow time for the system to restart
+        time.sleep(120)  # Allow time for the system to restart
     except requests.exceptions.RequestException as e:
         print(RED + f"Error restarting the system: {e}" + RESET)
 
