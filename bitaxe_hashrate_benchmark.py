@@ -13,12 +13,12 @@ RESET = "\033[0m"
 # Configuration
 bitaxe_ip = "http://192.168.2.117"
 core_voltages = [1150, 1200, 1250]
-frequencies = [550, 575, 590]
+frequencies = [575, 600]
 cool_down_voltage = 1166
 cool_down_frequency = 400
 cool_down_time = 300  # set x time in seconds
-benchmark_time = 9000  # set x time in seconds
-fetch_interval = 150  # set x time in seconds
+benchmark_time = 180  # set x time in seconds
+sample_interval = 10  # set x time in seconds
 max_temp = 66
 max_allowed_voltage = 1300
 max_allowed_frequency = 600
@@ -54,11 +54,22 @@ def fetch_default_settings():
         default_voltage = 1200
         default_frequency = 550
 
+# Add a global flag to track whether the system has already been reset
+system_reset_done = False
+
 def handle_sigint(signum, frame):
-    print(RED + "Benchmarking interrupted by user." + RESET)
-    reset_to_best_setting()
-    save_results()
-    print(GREEN + "Bitaxe reset to best or default settings and results saved." + RESET)
+    global system_reset_done
+    if not system_reset_done:
+        print(RED + "Benchmarking interrupted by user." + RESET)
+        if results:
+            reset_to_best_setting()
+            save_results()
+            print(GREEN + "Bitaxe reset to best or default settings and results saved." + RESET)
+        else:
+            print(YELLOW + "No valid benchmarking results found. Applying predefined default settings." + RESET)
+            set_system_settings(default_voltage, default_frequency)
+            restart_system()
+        system_reset_done = True
     sys.exit(0)
 
 # Register the signal handler
@@ -100,7 +111,7 @@ def restart_system():
         print(YELLOW + "Restarting Bitaxe system to apply new settings..." + RESET)
         response = requests.post(f"{bitaxe_ip}/api/system/restart", timeout=10)
         response.raise_for_status()  # Raise an exception for HTTP errors
-        time.sleep(120)  # Allow time for the system to restart
+        time.sleep(60)  # Allow time for the system to restart
     except requests.exceptions.RequestException as e:
         print(RED + f"Error restarting the system: {e}" + RESET)
 
@@ -108,26 +119,39 @@ def benchmark_iteration(core_voltage, frequency):
     print(GREEN + f"Starting benchmark for Core Voltage: {core_voltage}mV, Frequency: {frequency}MHz" + RESET)
     hash_rates = []
     temperatures = []
-    for sample in range(benchmark_time // fetch_interval):
+    total_samples = benchmark_time // sample_interval
+    
+    for sample in range(total_samples):
         info = get_system_info()
         if info is None:
             print(YELLOW + "Skipping this iteration due to failure in fetching system info." + RESET)
             return None, None
+        
         temp = info.get("temp")
         if temp is None:
             print(YELLOW + "Temperature data not available." + RESET)
             return None, None
+        
         if temp >= max_temp:
             print(RED + f"Temperature exceeded {max_temp}°C! Stopping current benchmark." + RESET)
             return None, None
+        
         hash_rate = info.get("hashRate")
         if hash_rate is None:
             print(YELLOW + "Hashrate data not available." + RESET)
             return None, None
+        
         hash_rates.append(hash_rate)
         temperatures.append(temp)
-        print(YELLOW + f"Sample {sample + 1}: Hashrate = {hash_rate} GH/s, Temperature = {temp}°C" + RESET)
-        time.sleep(fetch_interval)
+        
+        # Calculate percentage progress
+        percentage_progress = ((sample + 1) / total_samples) * 100
+        print(YELLOW + f"Sample {sample + 1}/{total_samples} ({percentage_progress:.2f}% complete) "
+                       f"for Core Voltage: {core_voltage}mV, Frequency: {frequency}MHz: "
+                       f"Hashrate = {hash_rate} GH/s, Temperature = {temp}°C" + RESET)
+        
+        time.sleep(sample_interval)
+    
     if hash_rates and temperatures:
         average_hashrate = sum(hash_rates) / len(hash_rates)
         average_temperature = sum(temperatures) / len(temperatures)
@@ -187,11 +211,23 @@ try:
             save_results()
 except Exception as e:
     print(RED + f"An unexpected error occurred: {e}" + RESET)
-    reset_to_best_setting()
-    save_results()
+    if results:
+        reset_to_best_setting()
+        save_results()
+    else:
+        print(YELLOW + "No valid benchmarking results found. Applying predefined default settings." + RESET)
+        set_system_settings(default_voltage, default_frequency)
+        restart_system()
 finally:
-    reset_to_best_setting()
-    save_results()
+    if not system_reset_done:
+        if results:
+            reset_to_best_setting()
+            save_results()
+            print(GREEN + "Bitaxe reset to best or default settings and results saved." + RESET)
+        else:
+            print(YELLOW + "No valid benchmarking results found. Applying predefined default settings." + RESET)
+            set_system_settings(default_voltage, default_frequency)
+            restart_system()
 
     # Sort results by averageHashRate in descending order and get the top 5
     top_5_results = sorted(results, key=lambda x: x["averageHashRate"], reverse=True)[:5]
