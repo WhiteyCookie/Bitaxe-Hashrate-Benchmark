@@ -119,6 +119,7 @@ def benchmark_iteration(core_voltage, frequency):
     print(GREEN + f"Starting benchmark for Core Voltage: {core_voltage}mV, Frequency: {frequency}MHz" + RESET)
     hash_rates = []
     temperatures = []
+    power_consumptions = []
     total_samples = benchmark_time // sample_interval
     
     for sample in range(total_samples):
@@ -130,19 +131,22 @@ def benchmark_iteration(core_voltage, frequency):
         temp = info.get("temp")
         if temp is None:
             print(YELLOW + "Temperature data not available." + RESET)
-            return None, None
+            return None, None, None
         
         if temp >= max_temp:
             print(RED + f"Temperature exceeded {max_temp}°C! Stopping current benchmark." + RESET)
-            return None, None
+            return None, None, None
         
         hash_rate = info.get("hashRate")
-        if hash_rate is None:
-            print(YELLOW + "Hashrate data not available." + RESET)
-            return None, None
+        power_consumption = info.get("power")
+        
+        if hash_rate is None or power_consumption is None:
+            print(YELLOW + "Hashrate or Watts data not available." + RESET)
+            return None, None, None
         
         hash_rates.append(hash_rate)
         temperatures.append(temp)
+        power_consumptions.append(power_consumption)
         
         # Calculate percentage progress
         percentage_progress = ((sample + 1) / total_samples) * 100
@@ -152,15 +156,20 @@ def benchmark_iteration(core_voltage, frequency):
         
         time.sleep(sample_interval)
     
-    if hash_rates and temperatures:
+    if hash_rates and temperatures and power_consumptions:
         average_hashrate = sum(hash_rates) / len(hash_rates)
         average_temperature = sum(temperatures) / len(temperatures)
+        average_power = sum(power_consumptions) / len(power_consumptions)
+        efficiency_jth = average_power / (average_hashrate / 1_000) # Convert Gh/s to TH/s
+        
         print(GREEN + f"Average Hashrate for Core Voltage: {core_voltage}mV, Frequency: {frequency}MHz = {average_hashrate} GH/s" + RESET)
         print(GREEN + f"Average Temperature for Core Voltage: {core_voltage}mV, Frequency: {frequency}MHz = {average_temperature}°C" + RESET)
-        return average_hashrate, average_temperature
+        print(GREEN + f"Efficiency: {efficiency_jth:.2f} J/TH" + RESET)
+        
+        return average_hashrate, average_temperature, efficiency_jth
     else:
-        print(YELLOW + "No hashrate or temperature data collected." + RESET)
-        return None, None
+        print(YELLOW + "No Hashrate or Temperature or Watts data collected." + RESET)
+        return None, None, None
 
 def cool_down():
     print(GREEN + f"Cooling down with Core Voltage: {cool_down_voltage}mV, Frequency: {cool_down_frequency}MHz for 5 minutes..." + RESET)
@@ -198,13 +207,14 @@ try:
     for voltage in core_voltages:
         for freq in frequencies:
             set_system_settings(voltage, freq)
-            avg_hashrate, avg_temp = benchmark_iteration(voltage, freq)
-            if avg_hashrate is not None and avg_temp is not None:
+            avg_hashrate, avg_temp, efficiency_jth = benchmark_iteration(voltage, freq)
+            if avg_hashrate is not None and avg_temp is not None and efficiency_jth is not None:
                 results.append({
                     "coreVoltage": voltage,
                     "frequency": freq,
                     "averageHashRate": avg_hashrate,
-                    "averageTemperature": avg_temp
+                    "averageTemperature": avg_temp,
+                    "efficiencyJTH": efficiency_jth
                 })
             else:
                 cool_down()
@@ -241,5 +251,6 @@ finally:
             print(GREEN + f"  Frequency: {result['frequency']}MHz" + RESET)
             print(GREEN + f"  Average Hashrate: {result['averageHashRate']} GH/s" + RESET)
             print(GREEN + f"  Average Temperature: {result['averageTemperature']}°C" + RESET)
+            print(GREEN + f"  Efficiency: {result['efficiencyJTH']:.2f} J/TH" + RESET)
     else:
         print(RED + "No valid results were found during benchmarking." + RESET)
