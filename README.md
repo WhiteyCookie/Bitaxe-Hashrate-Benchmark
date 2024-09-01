@@ -43,7 +43,7 @@ Before running the script, you can customize the following settings in the scrip
     core_voltages: List of core voltages (in mV) to test (default: [1150, 1200, 1250]).
 
 
-    frequencies: List of frequencies (in MHz) to test (default: [550, 575, 590]).
+    frequencies: List of frequencies (in MHz) to test (default: [550, 575, 600]).
 
 
     cool_down_voltage: Voltage to use during cooldown (default: 1166 mV).
@@ -113,12 +113,14 @@ Example Output:
     Frequency: 590MHz
     Average Hashrate: 555.5 GH/s
     Average Temperature: 60°C
+    Efficiency: 23.01 J/TH
 
     Rank 2:
     Core Voltage: 1250mV
     Frequency: 575MHz
     Average Hashrate: 666.6 GH/s
     Average Temperature: 62°C
+    Efficiency: 22.34 J/TH
     ...
 
 
